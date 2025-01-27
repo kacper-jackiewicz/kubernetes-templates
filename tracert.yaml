@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tracert
+spec:
+  template:
+    spec:
+      containers:
+        - name: print
+          image: alpine
+          imagePullPolicy: Never
+          command: ["traceroute", "google.pl" ]
+      restartPolicy: Never
+  backoffLimit: 4

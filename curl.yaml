@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: curl
+spec:
+  template:
+    spec:
+      containers:
+        - name: print
+          image: alpine/curl
+          imagePullPolicy: Never
+          command: ["curl", "host.docker.internal:52087" ]
+      restartPolicy: Never
+  backoffLimit: 4

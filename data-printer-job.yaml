@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-printer
+spec:
+  template:
+    spec:
+      containers:
+        - name: print
+          image: com.jk/tree:latest
+          imagePullPolicy: Never
+          command: ["tree", "/work" ]
+          volumeMounts:
+            - mountPath: /work
+              name: data-volume
+      restartPolicy: Never
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: eq-sd-pvc
+  backoffLimit: 4
