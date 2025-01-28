@@ -1,0 +1,88 @@
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eq-sd-mapper-data-preparation
+spec:
+  template:
+    spec:
+      containers:
+        - name: data-downloader
+          image: com.jk/object-storage-loader
+          imagePullPolicy: Never
+          command: ["java","-Dspring.profiles.active=download", "-Dspring.config.location=file:/spring/config/application.yaml", "-jar","/app.jar"]
+          volumeMounts:
+            - mountPath: /work
+              name: data-volume
+            - name: config-volume
+              mountPath: /spring/config
+      restartPolicy: Never
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: eq-sd-pvc
+        - name: config-volume
+          configMap:
+            name: eq-sd-loader-config
+  backoffLimit: 4
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eq-sd-mapper
+spec:
+  template:
+    spec:
+      containers:
+        - name: eq-sd-mapper
+          image: com.jk/spark-mapper
+          imagePullPolicy: Never
+          command: ["java","--add-opens=java.base/java.lang=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.io=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.net=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.nio=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.util=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED", \
+                    "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED", \
+                    "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED", \
+                    "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED", \
+                    "--add-opens=java.base/sun.security.action=ALL-UNNAMED", \
+                    "--add-opens=java.base/sun.util.calendar=ALL-UNNAMED", \
+                    "--add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED", \
+                    "-jar","/app.jar" ]
+      restartPolicy: Never
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: eq-sd-pvc
+  backoffLimit: 4
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eq-sd-mapper-data-preparation
+spec:
+  template:
+    spec:
+      containers:
+        - name: data-downloader
+          image: com.jk/object-storage-loader
+          imagePullPolicy: Never
+          command: ["java","-Dspring.profiles.active=upload", "-Dspring.config.location=file:/spring/config/application.yaml", "-jar","/app.jar"]
+          volumeMounts:
+            - mountPath: /work
+              name: data-volume
+            - name: config-volume
+              mountPath: /spring/config
+      restartPolicy: Never
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: eq-sd-pvc
+        - name: config-volume
+          configMap:
+            name: eq-sd-loader-config
+  backoffLimit: 4

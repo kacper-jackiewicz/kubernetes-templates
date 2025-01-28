@@ -1,0 +1,43 @@
+apiVersion: v1
+data:
+  java_opts: "--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED"
+kind: ConfigMap
+metadata:
+  name: java-opts
+---
+apiVersion: v1
+data:
+  application.yaml: |
+    spring.application.name: object-storage-loader
+    
+    storage:
+      url: "http://minio.argo.svc.cluster.local:9000"
+      user: admin
+      password: password
+      bucket:
+        name: test
+    
+    tasks:
+      download-objects:
+        - from: "/work/bbb.json"
+          to: "/work/eq-sd-mapper/input/trade.json"
+      upload-objects:
+        - from: "/work/th-mcm-eq-sd-mapper/output/output.json"
+          to: "/work/new.json"
+
+kind: ConfigMap
+metadata:
+  name: eq-sd-loader-config
+---
+apiVersion: v1
+data:
+  application.yaml: |
+    spring.application.name: spark-mapper
+    output.date: "${OUTPUT_DATE}"
+    
+    app:
+      input: "/work/eq-sd-mapper/input/trade.json"
+      output: "/work/th-mcm-eq-sd-mapper/output/output.json"
+kind: ConfigMap
+metadata:
+  name: eq-sd-mapper-config
