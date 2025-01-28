@@ -5,6 +5,14 @@ metadata:
   namespace: argo
 spec:
   entrypoint: load-data
+  volumeClaimTemplates:
+    - metadata:
+        name: data-volume
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
   arguments:
     parameters:
       - name: output_date
@@ -33,9 +41,6 @@ spec:
           - name: config-volume
             mountPath: /spring/config
       volumes:
-        - name: data-volume
-          persistentVolumeClaim:
-            claimName: eq-sd-pvc
         - name: config-volume
           configMap:
             name: eq-sd-loader-config
@@ -58,9 +63,6 @@ spec:
           - mountPath: /work
             name: data-volume
       volumes:
-        - name: data-volume
-          persistentVolumeClaim:
-            claimName: eq-sd-pvc
         - name: config-volume
           configMap:
             name: eq-sd-mapper-config
@@ -75,9 +77,6 @@ spec:
           - name: config-volume
             mountPath: /spring/config
       volumes:
-        - name: data-volume
-          persistentVolumeClaim:
-            claimName: eq-sd-pvc
         - name: config-volume
           configMap:
             name: eq-sd-loader-config
