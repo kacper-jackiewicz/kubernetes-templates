@@ -20,10 +20,10 @@ data:
     tasks:
       download-objects:
         - from: "/work/bbb.json"
-          to: "/work/eq-sd-mapper/input/trade.json"
+          to: "/work/consumer/input/trade.json"
       upload-objects:
-        - from: "/work/th-mcm-eq-sd-mapper/output/output.json"
-          to: "/work/new.json"
+        - from: "/work/mapper/output/output_${output}.json"
+          to: "/work/output_20250125.json"
 
 kind: ConfigMap
 metadata:
@@ -36,8 +36,23 @@ data:
     output.date: "${OUTPUT_DATE}"
     
     app:
-      input: "/work/eq-sd-mapper/input/trade.json"
-      output: "/work/th-mcm-eq-sd-mapper/output/output.json"
+      additional-field: "mapper-field"
+      input: "/work/eq-sd-consumer/output/output_${output.date}.json"
+      output: "/work/eq-sd-mapper/output/output_${output.date}.json"
 kind: ConfigMap
 metadata:
   name: eq-sd-mapper-config
+---
+apiVersion: v1
+data:
+  application.yaml: |
+    spring.application.name: spark-consumer
+    output.date: "${OUTPUT_DATE}"
+    
+    app:
+      additional-field: "consumer-field"
+      input: "/work/eq-sd-consumer/input/trade.json"
+      output: "/work/eq-sd-consumer/output/output_${output.date}.json"
+kind: ConfigMap
+metadata:
+  name: eq-sd-consumer-config

@@ -23,8 +23,11 @@ spec:
         tasks:
         - name: data-downloader
           template: data-downloader-template
-        - name: mapper
+        - name: consumer
           dependencies: [ data-downloader ]
+          template: consumer-template
+        - name: mapper
+          dependencies: [ consumer ]
           template: mapper-template
         - name: data-uploader
           template: data-uploader-template
@@ -44,6 +47,28 @@ spec:
         - name: config-volume
           configMap:
             name: eq-sd-loader-config
+    - name: consumer-template
+      container:
+        image: com.jk/spark-mapper
+        imagePullPolicy: Never
+        env:
+          - name: JDK_JAVA_OPTIONS
+            valueFrom:
+              configMapKeyRef:
+                name: java-opts
+                key: java_opts
+          - name: OUTPUT_DATE
+            value: "{{ workflow.parameters.output_date }}"
+        command: [ "java", "-Dspring.config.location=file:/spring/config/application.yaml", "-jar","/app.jar" ]
+        volumeMounts:
+          - name: config-volume
+            mountPath: /spring/config
+          - mountPath: /work
+            name: data-volume
+      volumes:
+        - name: config-volume
+          configMap:
+            name: eq-sd-consumer-config
     - name: mapper-template
       container:
         image: com.jk/spark-mapper
